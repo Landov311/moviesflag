@@ -13,7 +13,7 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
     def notest_integration(self):
         response = self.client.get("/api/movies?filter=superman")
         self.assertEqual(response.status_code, 200)
-
+        
         # The response should be JSON and contain data
         data = response.get_json()
         self.assertIsInstance(data, list)

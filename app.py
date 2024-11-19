@@ -6,6 +6,9 @@ import time
 import os
 import hashlib
 
+# Importar el módulo CRUD
+import CRUD
+
 app = Flask(__name__)
 apikey = "b2968c04"
 
@@ -106,27 +109,51 @@ def merge_data_with_flags(filter):
 
     for a in filmssearch:
         for movie in a["Search"]:
-            moviedetails = getmoviedetails(movie)
+            moviedetails = getmoviedetails(movie)  # details de movies
             countriesNames = moviedetails["Country"].split(",")
             countries = []
+
+            movie_id = moviedetails["imdbID"]
+            movie_title = moviedetails["Title"]
+            movie_year = moviedetails["Year"]
+            try:
+                # Intenta crear la película en la base de datos
+                CRUD.create_movie(movie_id, movie_title, f"Año: {movie_year}")
+            except Exception as e:
+                print(f"Error al crear la película: {e}")
+
             for country in countriesNames:
                 country = country.strip()
-                
+
+                # Obtener la URL de la bandera
                 if country in flag_cache:
                     flag = flag_cache[country]
                 else:
                     flag = get_country_flag(country)
                     flag_cache[country] = flag
-                
+
+                # Comprobar si el país ya existe antes de crearlo
+                if not CRUD.country_exists(country):
+                    try:
+                        CRUD.create_country(country, flag)
+                    except Exception as e:
+                        print(f"Error al crear el país: {e}")
+
                 countrywithflag = {
-                    "name": country,
-                    "flag": flag
+                    "name": country,  # id de country
+                    "flag": flag  # url de country
                 }
                 countries.append(countrywithflag)
-                
+
+            try:
+                CRUD.create_movie_country(movie_id, ', '.join([c["name"] for c in countries]))
+            except Exception as e:
+                print(f"Error al crear la relación película-país: {e}")
+
+            # Construir el resultado para la API
             moviewithflags = {
-                "title": moviedetails["Title"],
-                "year": moviedetails["Year"],
+                "title": movie_title,
+                "year": movie_year,
                 "countries": countries
             }
             moviesdetailswithflags.append(moviewithflags)
@@ -134,6 +161,7 @@ def merge_data_with_flags(filter):
     end_time = time.time()
     print(f"merge_data_with_flags executed in {end_time - start_time:.2f} seconds")
     return moviesdetailswithflags
+
 
 @app.route("/")
 def index():

@@ -4,12 +4,3 @@ Run
 pip install flask
 python app.py
 go to http://127.0.0.1:5000/?filter=transformers
-
-
-Límite de Consumo de APIS:
-Respecto a la información de get(url) y getmoviedetails(), usó memoria caché para evitar realizar las mismas request.
-También hago lo mismo para obtener las banderas, creo una variable en la función merge para guardar las banderas obtenidas, así evito realizar las mismas request.
-Lentitud:
-Uso hilos para agilizar los request, de igual manera sirve el caché usado para los get y la función de get_country_flag. 
-Soporte de PAGÍNACIÓN:
-En esta parte hago que el getfilms, no solo devuelva el resultado de una sola págino, sino de 3.
